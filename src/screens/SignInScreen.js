@@ -1,5 +1,5 @@
 import React, { useState, useEffect} from "react";
-import { StyleSheet, View, Text, Image, SafeAreaView, KeyboardAvoidingView } from "react-native";
+import { StyleSheet, View, Alert, Image, SafeAreaView, KeyboardAvoidingView } from "react-native";
 import Button from "../components/Button"
 import EmailTextField from "../components/EmailTextField";
 import Color from "../utils/Colors";
@@ -9,6 +9,8 @@ import Constants from "../const/Constants";
 import DismissKeyboard from "../components/DismissKeyboard"
 import Utility from "../utils/Utility"
 import PasswordField from "../components/PasswordField";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase/Firebase";
 
 function SignInScreen() {
 
@@ -16,6 +18,7 @@ function SignInScreen() {
     const [password, setPassword] = useState('')
     const [emailError, setEmailError] = useState('')
     const [passwordError, setPasswordError] = useState('')
+    const [isLoading, setIsLoading] = useState('')
 
     validateEmailAddress = () => {
         const isValidEmail =  Utility.isEmailValid(email)
@@ -27,6 +30,44 @@ function SignInScreen() {
         const isValidPassword =  Utility.isValidField(password)
         isValidPassword ? setPasswordError('') : setPasswordError(Strings.PasswordFieldEmpty)
         return isValidPassword
+    }
+
+    performAuth = () => {
+        const isValidEmail = validateEmailAddress()
+        const isValidPassword = validatePassword()
+
+        if(isValidEmail && isValidPassword) {
+            setEmailError('')
+            setPasswordError('')
+            registration(email, password)
+        }
+    }
+
+    registration = (email, password) => {
+        try {
+            setIsLoading(true)
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    setIsLoading(false)
+                    Alert.alert('Logged In')
+                })
+                .catch((error) => {
+                    createUserWithEmailAndPassword(auth, email, password)
+                        .then((userCredential) => {
+                            setIsLoading(false)
+                            Alert.alert('Logged In Account Create')
+                        })
+                        .catch((error) => {
+                            setIsLoading(false)
+                            console.log(error)
+                            Alert.alert(error.message)
+                        });
+                });
+        }
+        catch (error) {
+            setIsLoading(false)
+            Alert.alert(error.message)
+        }
     }
 
     return (
@@ -50,6 +91,7 @@ function SignInScreen() {
                         />
                         <Button
                             title={Strings.Join}
+                            onPress={performAuth}
                         />
                     </SafeAreaView>
                 </View>
