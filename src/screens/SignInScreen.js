@@ -9,10 +9,11 @@ import Constants from "../const/Constants";
 import DismissKeyboard from "../components/DismissKeyboard"
 import Utility from "../utils/Utility"
 import PasswordField from "../components/PasswordField";
+import { useNavigation } from '@react-navigation/native';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/Firebase";
 
-function SignInScreen() {
+function SignInScreen({ navigation }) {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -49,13 +50,20 @@ function SignInScreen() {
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
                     setIsLoading(false)
-                    Alert.alert('Logged In')
+                    navigation.reset({
+                        index: 0,
+                        routes: [{name: 'GroupsScreen'}]
+                    })
+
                 })
                 .catch((error) => {
                     createUserWithEmailAndPassword(auth, email, password)
                         .then((userCredential) => {
                             setIsLoading(false)
-                            Alert.alert('Logged In Account Create')
+                            navigation.reset({
+                                index: 0,
+                                routes: [{name: 'GroupsScreen'}]
+                            })
                         })
                         .catch((error) => {
                             setIsLoading(false)
